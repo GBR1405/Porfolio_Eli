@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+// @ts-ignore
 import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
 
 const FeaturedWork = () => {
