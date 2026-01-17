@@ -8,8 +8,7 @@ import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
 const FeaturedWork = () => {
   const [featureWork, setFeatureWork] = useState<any[]>([]);
   const [activeWork, setActiveWork] = useState<any | null>(null);
-
-  // Controla qué imágenes ya cargaron
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loadedImages, setLoadedImages] = useState<{ [key: number]: boolean }>({});
 
   useEffect(() => {
@@ -25,32 +24,69 @@ const FeaturedWork = () => {
     setLoadedImages((prev) => ({ ...prev, [index]: true }));
   };
 
+  // Extraer categorías únicas
+  const categories = Array.from(new Set(featureWork.map((w) => w.category)));
+
+  // Filtrar según selección
+  const displayedWorks = selectedCategory
+    ? featureWork.filter((w) => w.category === selectedCategory)
+    : featureWork;
+
   return (
     <section>
       <div className="container">
         <div className="border-x border-primary/10 px-4 sm:px-7 py-10">
-          <p className="text-sm tracking-[2px] text-primary uppercase font-medium mb-8">
+          {/* Título */}
+          <p className="text-sm tracking-[2px] text-primary uppercase font-medium mb-4">
             Mis Proyectos
           </p>
 
+          {/* Botones de filtro */}
+          <div className="flex flex-wrap gap-2 mb-8">
+            <button
+              className={`px-4 py-1 rounded-full border ${
+                !selectedCategory ? "bg-primary text-background" : "border-primary text-primary"
+              }`}
+              onClick={() => setSelectedCategory(null)}
+            >
+              Todos
+            </button>
+
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                className={`px-4 py-1 rounded-full border ${
+                  selectedCategory === cat ? "bg-primary text-background" : "border-primary text-primary"
+                }`}
+                onClick={() => setSelectedCategory(cat)}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Grid */}
           <ResponsiveMasonry
             columnsCountBreakPoints={{ 350: 1, 640: 2, 900: 3, 1200: 4 }}
           >
             <Masonry gutter="16px">
-              {featureWork.map((work, i) => (
+              {displayedWorks.map((work, i) => (
                 <div
                   key={i}
                   onClick={() => setActiveWork(work)}
-                  className="cursor-pointer rounded-xl overflow-hidden bg-muted/30 hover:opacity-90 transition"
+                  className="cursor-pointer rounded-xl overflow-hidden bg-muted/30 hover:opacity-90 transition-all duration-500"
+                  style={{
+                    opacity: loadedImages[i] ? 1 : 0,
+                    transform: loadedImages[i] ? "translateY(0px)" : "translateY(20px)",
+                    transition: "opacity 0.7s, transform 0.7s",
+                  }}
                 >
                   <Image
                     src={work.image}
                     alt={work.title}
                     width={1200}
                     height={1200}
-                    className={`w-full h-auto object-contain transition-opacity duration-700 ${
-                      loadedImages[i] ? "opacity-100" : "opacity-0"
-                    }`}
+                    className="w-full h-auto object-contain"
                     onLoad={() => handleImageLoad(i)}
                   />
                 </div>
@@ -70,7 +106,6 @@ const FeaturedWork = () => {
             onClick={(e) => e.stopPropagation()}
             className="bg-background rounded-xl max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 p-8 animate-in fade-in zoom-in duration-300"
           >
-            {/* Imagen */}
             <div className="flex items-center justify-center">
               <Image
                 src={activeWork.image}
@@ -84,7 +119,6 @@ const FeaturedWork = () => {
               />
             </div>
 
-            {/* Info */}
             <div className="flex flex-col justify-center gap-6">
               <h3 className="text-3xl font-medium">{activeWork.title}</h3>
 
