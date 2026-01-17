@@ -1,28 +1,40 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 // @ts-ignore
 import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
+
+// Skeleton Loader Component
+const SkeletonLoader = () => (
+  <div className="animate-pulse bg-muted/50 rounded-xl w-full h-full min-h-[200px]" />
+);
 
 const FeaturedWork = () => {
   const [featureWork, setFeatureWork] = useState<any[]>([]);
   const [activeWork, setActiveWork] = useState<any | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loadedImages, setLoadedImages] = useState<{ [key: number]: boolean }>({});
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch("/api/featured-work");
-      const data = await res.json();
-      setFeatureWork(data.featureWork);
+      try {
+        const res = await fetch("/api/featured-work");
+        const data = await res.json();
+        setFeatureWork(data.featureWork);
+      } catch (error) {
+        console.error("Error fetching featured work:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchData();
   }, []);
 
-  const handleImageLoad = (index: number) => {
+  const handleImageLoad = useCallback((index: number) => {
     setLoadedImages((prev) => ({ ...prev, [index]: true }));
-  };
+  }, []);
 
   // Extraer categorías únicas
   const categories = Array.from(new Set(featureWork.map((w) => w.category)));
@@ -70,27 +82,40 @@ const FeaturedWork = () => {
             columnsCountBreakPoints={{ 350: 1, 640: 2, 900: 3, 1200: 4 }}
           >
             <Masonry gutter="16px">
-              {displayedWorks.map((work, i) => (
-                <div
-                  key={i}
-                  onClick={() => setActiveWork(work)}
-                  className="cursor-pointer rounded-xl overflow-hidden bg-muted/30 hover:opacity-90 transition-all duration-500"
-                  style={{
-                    opacity: loadedImages[i] ? 1 : 0,
-                    transform: loadedImages[i] ? "translateY(0px)" : "translateY(20px)",
-                    transition: "opacity 0.7s, transform 0.7s",
-                  }}
-                >
-                  <Image
-                    src={work.image}
-                    alt={work.title}
-                    width={1200}
-                    height={1200}
-                    className="w-full h-auto object-contain"
-                    onLoad={() => handleImageLoad(i)}
-                  />
-                </div>
-              ))}
+              {isLoading
+                ? // Skeleton loaders mientras carga
+                  Array.from({ length: 8 }).map((_, i) => (
+                    <SkeletonLoader key={`skeleton-${i}`} />
+                  ))
+                : displayedWorks.map((work, i) => (
+                    <div
+                      key={i}
+                      onClick={() => setActiveWork(work)}
+                      className="cursor-pointer rounded-xl overflow-hidden bg-muted/30 hover:opacity-90 transition-all duration-500 relative group"
+                      style={{
+                        opacity: loadedImages[i] ? 1 : 0.7,
+                        transform: loadedImages[i] ? "translateY(0px)" : "translateY(20px)",
+                        transition: "opacity 0.6s ease-out, transform 0.6s ease-out",
+                      }}
+                    >
+                      {/* Blur placeholder mientras carga */}
+                      {!loadedImages[i] && (
+                        <div className="absolute inset-0 bg-muted/40 animate-pulse z-10 rounded-xl" />
+                      )}
+
+                      <Image
+                        src={work.image}
+                        alt={work.title}
+                        width={1200}
+                        height={1200}
+                        className="w-full h-auto object-contain"
+                        loading="lazy"
+                        placeholder="empty"
+                        onLoad={() => handleImageLoad(i)}
+                        quality={75}
+                      />
+                    </div>
+                  ))}
             </Masonry>
           </ResponsiveMasonry>
         </div>
@@ -113,6 +138,7 @@ const FeaturedWork = () => {
                 width={1400}
                 height={1400}
                 className="max-h-[80vh] w-auto object-contain rounded-lg transition-opacity duration-700 opacity-0"
+                priority
                 onLoad={(e) => {
                   (e.currentTarget as HTMLImageElement).classList.add("opacity-100");
                 }}
