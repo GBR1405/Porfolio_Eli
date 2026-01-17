@@ -12,8 +12,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Typefolio",
-  description: "Typefolio - Nextjs Templates",
+  title: "NeoMilkShake - Porfolio",
+  description: "Porfolio de Eli",
 };
 
 export default function RootLayout({

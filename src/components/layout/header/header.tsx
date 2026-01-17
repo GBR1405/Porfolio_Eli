@@ -21,13 +21,13 @@ const Header = () => {
 
         {/* Botón hamburguesa para móvil */}
         <button
-          className="md:hidden flex items-center justify-center w-10 h-10 border border-border rounded-lg"
+          className="md:hidden flex flex-col justify-between w-6 h-5"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle menu"
         >
-          <span className="block w-6 h-0.5 bg-primary mb-1 transition-transform duration-300" style={{ transform: menuOpen ? "rotate(45deg) translateY(7px)" : "rotate(0)" }}></span>
-          <span className="block w-6 h-0.5 bg-primary mb-1 transition-opacity duration-300" style={{ opacity: menuOpen ? 0 : 1 }}></span>
-          <span className="block w-6 h-0.5 bg-primary transition-transform duration-300" style={{ transform: menuOpen ? "rotate(-45deg) translateY(-7px)" : "rotate(0)" }}></span>
+          <span className="block h-0.5 bg-primary w-full"></span>
+          <span className="block h-0.5 bg-primary w-full"></span>
+          <span className="block h-0.5 bg-primary w-full"></span>
         </button>
 
         {/* Navegación para desktop */}
