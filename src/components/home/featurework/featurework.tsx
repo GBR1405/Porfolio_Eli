@@ -9,6 +9,9 @@ const FeaturedWork = () => {
   const [featureWork, setFeatureWork] = useState<any[]>([]);
   const [activeWork, setActiveWork] = useState<any | null>(null);
 
+  // Controla qué imágenes ya cargaron
+  const [loadedImages, setLoadedImages] = useState<{ [key: number]: boolean }>({});
+
   useEffect(() => {
     const fetchData = async () => {
       const res = await fetch("/api/featured-work");
@@ -17,6 +20,10 @@ const FeaturedWork = () => {
     };
     fetchData();
   }, []);
+
+  const handleImageLoad = (index: number) => {
+    setLoadedImages((prev) => ({ ...prev, [index]: true }));
+  };
 
   return (
     <section>
@@ -41,7 +48,10 @@ const FeaturedWork = () => {
                     alt={work.title}
                     width={1200}
                     height={1200}
-                    className="w-full h-auto object-contain"
+                    className={`w-full h-auto object-contain transition-opacity duration-700 ${
+                      loadedImages[i] ? "opacity-100" : "opacity-0"
+                    }`}
+                    onLoad={() => handleImageLoad(i)}
                   />
                 </div>
               ))}
@@ -67,15 +77,16 @@ const FeaturedWork = () => {
                 alt={activeWork.title}
                 width={1400}
                 height={1400}
-                className="max-h-[80vh] w-auto object-contain rounded-lg"
+                className="max-h-[80vh] w-auto object-contain rounded-lg transition-opacity duration-700 opacity-0"
+                onLoad={(e) => {
+                  (e.currentTarget as HTMLImageElement).classList.add("opacity-100");
+                }}
               />
             </div>
 
             {/* Info */}
             <div className="flex flex-col justify-center gap-6">
-              <h3 className="text-3xl font-medium">
-                {activeWork.title}
-              </h3>
+              <h3 className="text-3xl font-medium">{activeWork.title}</h3>
 
               <div className="flex flex-wrap gap-3">
                 {activeWork.roles?.map((role: string, i: number) => (
